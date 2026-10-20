@@ -20,12 +20,24 @@ class EquipmentController extends Controller
             ->paginate(15)
             ->withQueryString();
 
-        return view('equipment.index', compact('equipment', 'status'));
+        $counts = Equipment::query()
+            ->selectRaw('status, count(*) as total')
+            ->groupBy('status')
+            ->pluck('total', 'status');
+
+        return view('equipment.index', [
+            'equipment' => $equipment,
+            'status' => $status,
+            'counts' => $counts,
+            'totalCount' => $counts->sum(),
+        ]);
     }
 
     public function create()
     {
-        return view('equipment.create', ['equipment' => new Equipment(['status' => EquipmentStatus::Active])]);
+        return view('equipment.create', [
+            'equipment' => new Equipment(['status' => EquipmentStatus::Active]),
+        ]);
     }
 
     public function store(EquipmentRequest $request)
